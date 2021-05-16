@@ -2,7 +2,7 @@
 This is a social network project who have all the features like instagram except ig tv
 
 
-##Initial setup
+## Initial setup
 git clone https://github.com/kushaldazzle/major_project_backend
 pip install virtualenv
 virtualenv env
@@ -11,7 +11,7 @@ pip install -r requirements.txt
 python manage.py migrate
 
 
-#Running project
+## Running project
 .\env\Scripts\activate
 python manage.py runserver
 
