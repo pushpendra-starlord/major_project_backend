@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from authentication.serializer import CustomModelSerializer
+from shared.serializer import CustomModelSerializer
 from blog.models  import *
 
 class BlogPostSerializer(CustomModelSerializer):
@@ -7,7 +7,7 @@ class BlogPostSerializer(CustomModelSerializer):
         model = BlogPost
         fields = "__all__"
 
-class CommenttSerializer(CustomModelSerializer):
+class CommentSerializer(CustomModelSerializer):
     class Meta:
         model = Comment
         fields = "__all__"

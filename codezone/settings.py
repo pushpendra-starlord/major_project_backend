@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'blog',
     'followunfollow',
     'chat',
+    'shared',
 ]
 
 MIDDLEWARE = [
