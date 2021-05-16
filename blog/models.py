@@ -34,8 +34,5 @@ class Comment(models.Model):
 class Like(models.Model):
     post = models.ForeignKey(BlogPost, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'post'], name="unique_likes")
-        ]
-        ordering = ['-id',]
+    created_at = models.DateTimeField(default = timezone.now)
+    last_updated_at = models.DateTimeField(auto_now_add = True)
