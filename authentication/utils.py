@@ -3,6 +3,7 @@ from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.conf import settings
 from django.core.mail import send_mail
+from followunfollow.models import Follow
 
 def get_token(user_object):
     refresh = RefreshToken.for_user(user_object)
@@ -22,4 +23,13 @@ def otp_creation(user):
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [user.email, ]
     send_mail( subject, message, email_from, recipient_list)
+
+def get_following_count(user):
+    follower_obj = Follow.objects.filter(user = user)
+    follower = follower_obj.values_list('follower', flat= True).count()
+    following = follower_obj.values_list('following', flat= True).count()
+    return {
+        "follower" : follower,
+        "following": following 
+    }
 
