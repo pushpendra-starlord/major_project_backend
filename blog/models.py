@@ -15,7 +15,7 @@ class BlogPost(models.Model):
     content = models.TextField(null=True, blank=True)
     image = models.FileField(null=True, blank=True)
     view_type = models.PositiveSmallIntegerField(choices=VIEW_TYPE, default=1, blank=True)
-
+    
 
     class Meta:
         ordering = ['-id',]
