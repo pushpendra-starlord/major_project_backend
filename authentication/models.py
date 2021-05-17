@@ -14,4 +14,6 @@ class User(AbstractUser):
     blue_tick = models.BooleanField(default= False)
     otp_code = models.CharField(max_length=10, null=True, blank=True)
     otp_created_at = models.DateTimeField(default = timezone.now)
+    email_verified = models.BooleanField(default=False)
+    mobile_verified = models.BooleanField(default=False)
     profile_image = models.ImageField(upload_to='profile_image', default='profile_image/default_image.png')
