@@ -10,6 +10,7 @@ class User(AbstractUser):
     )
     dob = models.DateTimeField(null= True, blank= True)
     mobile = models.CharField(max_length=15, null= True, blank= True, unique= True)
+    email = models.EmailField(unique=True, null= True, blank= True)
     gender = models.SmallIntegerField(choices=GENDER, null= True, blank= True)
     blue_tick = models.BooleanField(default= False)
     otp_code = models.CharField(max_length=10, null=True, blank=True)

@@ -77,6 +77,7 @@ class RegisterView(APIView):
         email = requset.data.get("email")
         
         obj = User.objects.filter(username = username)
+        email_obj = User.objects.filter(email= email).first()
         if obj:
             output_detail = "Username already exist"
             context = {
@@ -85,9 +86,20 @@ class RegisterView(APIView):
                 "data" : output_data,
             }
             return Response(context, status=res_status, content_type="application/json")
+        
+        elif email_obj:
+            if email_obj.email_verified == True:
+                output_detail = "user is registered with this email"
+            else:
+                otp_creation(email_obj)
+                output_data = {
+                    "email" : email_obj.email,
+                    "status" : 1
+                }
 
         else:
-            user_obj  = User.objects.create(username = username, password = password, email = email)
+            user_obj  = User.objects.create(username = username, email = email)
+            user_obj.set_password(password)
             otp_creation(user_obj)
             Follow.objects.create(user = user_obj)
             block_list = BlockList.objects.create(user = user_obj)
