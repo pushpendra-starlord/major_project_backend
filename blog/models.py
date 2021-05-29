@@ -36,3 +36,7 @@ class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default = timezone.now)
     last_updated_at = models.DateTimeField(auto_now_add = True)
+
+
+    class Meta:
+        unique_together = ("post", "user")
