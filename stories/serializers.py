@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import fields
 from rest_framework import serializers
-from . models import Story, Viewer
+from . models import Story
 
 
 class StorySerializer(serializers.ModelSerializer):
