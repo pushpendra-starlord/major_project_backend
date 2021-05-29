@@ -18,16 +18,36 @@ class BlogPostView(CreateUpdateDeleteView):
     model=BlogPost
     serializer=BlogPostSerializer
 
-class LikeView(CreateUpdateDeleteView):
-    model=Like
-    serializer=LikePostSerializer
+    def get(self, request):
+        output_status = False
+        output_detail = "Failed"
+        res_status = status.HTTP_400_BAD_REQUEST
+        output_data = {}
+        id = request.GET.get("id")
+        if id:
+            post_obj = BlogPost.objects.filter(pk = id).first()
+            serializer = BlogPostSerializer(post_obj)
+            output_status = True
+            output_data = serializer.data
+            output_detail = "Success"
+            res_status = status.HTTP_200_OK
+        else:
+            output_detail = "Invalid Id"
+        
+        context = {
+            "status" : output_status,
+            "detail" : output_detail,
+            "data" : output_data
+        }
+        return Response (context, status = res_status)
+
+
 
 class CommentView(CreateUpdateDeleteView):
     model=Comment
     serializer=CommentSerializer
 
 class ListBlogView(APIView):
-
     def get_follower(self,user):
         following_list = list(Follow.objects.filter(user = user).values_list("following", flat = True))
         if following_list :
@@ -75,11 +95,77 @@ class ListBlogView(APIView):
             output_detail="Success"
             res_status=status.HTTP_200_OK
             data=serializer.data
+        else:
+            output_detail = "No content"
         context={
             "status":output_status,
             "detail":output_detail,
             "data":data
         }
         return Response(context, status=res_status)
+
+
+class LikeView(APIView):
+    def get(self, request, id):
+        page = request.GET.get('page', '')
+        try:
+            page = int(page)
+        except Exception as  e:
+            page = 1
+        output_status=False
+        output_detail="Falied"
+        res_status=status.HTTP_400_BAD_REQUEST
+        output_data = {}
+        post_obj = BlogPost.objects.filter(pk = id).first()
+        if post_obj:
+            likes = Like.objects.filter(post = post_obj)[20 * (page - 1):20 * page]
+            if likes:
+                serializer = LikePostSerializer(likes, many = True)
+                output_detail = "Success"
+                output_status = True
+                res_status = status.HTTP_200_OK
+                output_data = serializer.data
+            else:
+                output_detail = "Last"
+        else:
+            output_detail = "Invalid id"
+        context={
+            "status":output_status,
+            "detail":output_detail,
+            "data": output_data
+        }
+        return Response(context, status=res_status)
+    
+
+    def post(self, request, id):
+        output_status=False
+        output_detail="Falied"
+        res_status=status.HTTP_400_BAD_REQUEST
+        post_obj = BlogPost.objects.filter(pk = id).first()
+        if post_obj:
+            try:
+                Like.objects.create(user = request.user, post = post_obj)
+                output_status = True
+                output_detail = "Liked"
+                res_status = status.HTTP_200_OK
+            except Exception as e:
+                like_obj = Like.objects.filter(user = request.user, post = post_obj)
+                like_obj.delete()
+                output_status = True
+                output_detail = "Unliked"
+                res_status = status.HTTP_200_OK
+        else:
+            output_detail = "Invalid Post id"
+        context={
+            "status":output_status,
+            "detail":output_detail,
+        }
+        return Response(context, status=res_status)
+
+
+
+            
+
+
 
 

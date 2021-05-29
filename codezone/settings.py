@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'followunfollow',
     'chat',
     'shared',
-    'notification'
+    'notification',
+    'stories'
 ]
 
 MIDDLEWARE = [

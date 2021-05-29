@@ -227,9 +227,9 @@ class ProfileView(APIView):
         output_detail = "Unexpected Error"
         output_data = {} 
         user = request.user
-        username = request.GET.get('username')
-        if username:
-            user = User.objects.filter(username = username).first()
+        id = request.GET.get('id')
+        if id:
+            user = User.objects.filter(pk = id).first()
             if user:
                 pass
             else:
@@ -310,6 +310,69 @@ class EmailVerification(APIView):
         return Response(context, status=res_status)
 
 
+
+
+class PasswordReset(APIView):
+    permission_classes = ()
+    def get(self, request):
+        output_status = False
+        res_status = status.HTTP_400_BAD_REQUEST
+        output_detail = "Unexpected Error"
+        login_data = request.GET.get("login_data")
+        user = None
+        user_obj = User.objects.filter(username = login_data).first()
+        if user_obj:
+            user = user_obj
+        else:
+            user = User.objects.filter(email = login_data).first()
+        if user:
+            otp_creation(user)
+            output_status = True
+            output_detail = "Otp Sent"
+            res_status = status.HTTP_200_OK
+        else:
+            output_detail = "invalid login detail"
+        context = {
+            "status": output_status,
+            "detail": output_detail,
+
+        }
+        return Response(context, status=res_status)
+
+    
+    def post(self, request):
+        output_status = False
+        res_status = status.HTTP_400_BAD_REQUEST
+        output_detail = "Unexpected Error"
+        login_data = request.data.get("login_data")
+        otp = request.data.get("otp")
+        user = None
+        user_obj = User.objects.filter(username = login_data).first()
+        if user_obj:
+            user = user_obj
+        else:
+            user = User.objects.filter(email = login_data).first()
+        time_difference = timezone.now() - user_obj.otp_created_at
+        if user and user.otp_code == otp and time_difference.seconds < 600:
+            password = request.data.get("password")
+            user.set_password(password)
+            output_status = True
+            output_detail = "Success"
+            res_status = status.HTTP_200_OK
+        context = {
+            "status": output_status,
+            "detail": output_detail,
+
+        }
+        return Response(context, status=res_status)
+        
+
+
+
+
+        
+
+        
 
 
 

@@ -15,7 +15,7 @@ class LikePostSerializer(CustomModelSerializer):
     user=UserSerializer(read_only=True)
     class Meta:
         model = Like
-        fields = "__all__"
+        fields = ("user",)
 
 class BlogPostSerializer(CustomModelSerializer):
     comment= serializers.SerializerMethodField()
