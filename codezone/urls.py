@@ -21,7 +21,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/',include('authentication.urls')),
     path('api/network/', include('followunfollow.urls')),
-    path('api/blog/', include('blog.urls'))
+    path('api/blog/', include('blog.urls')),
+    path('api/notification/', include('notification.urls')),
 ]
 from django.conf import settings
 from django.conf.urls.static import static

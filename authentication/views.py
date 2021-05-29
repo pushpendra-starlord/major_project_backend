@@ -1,3 +1,4 @@
+from django.utils import timezone
 from blog.serializer import BlogPostSerializer
 from blog.models import BlogPost
 from authentication.utils import get_token, otp_creation, get_following_count
@@ -16,8 +17,8 @@ class LoginView(APIView):
     permission_classes = ()
     def post(self, request):
         output_status = True
-        res_status = status.HTTP_400_BAD_REQUEST
-        detail = "Unexpected error"
+        res_status = status.HTTP_200_OK
+        detail = "Success"
         data = {}
         login_data = request.data.get("login_data")
         password = request.data.get("password")
@@ -38,7 +39,20 @@ class LoginView(APIView):
                 res_status = status.HTTP_400_BAD_REQUEST
                 detail = "Incorrect password"
 
-        elif email_obj.email_verified or username_obj.email_verified:
+        elif username_obj.email_verified == False :
+            output_status = False
+            res_status = status.HTTP_400_BAD_REQUEST
+            detail = "Email Verificaction"
+            if email_obj:
+                user = email_obj
+            else:
+                user = username_obj
+            data = {
+                "email" : user.email,
+                "status": 1
+            }
+            otp_creation(user)
+        elif email_obj.email_verified == False:
             output_status = False
             res_status = status.HTTP_400_BAD_REQUEST
             detail = "Email Verificaction"
@@ -264,6 +278,39 @@ class ProfileView(APIView):
             "data" : output_data
         }
         return Response(context, status=res_status)
+
+
+class EmailVerification(APIView):
+    permission_classes = ()
+    def post(self, request):
+        output_status = False
+        res_status = status.HTTP_400_BAD_REQUEST
+        output_detail = "Unexpected Error"
+        email = request.data.get("email", '')
+        otp = request.data.get("otp", "")
+        if email and otp:
+            user_obj = User.objects.filter(email= email).first()
+            time_difference = timezone.now() - user_obj.otp_created_at
+            if user_obj.otp_code == otp and time_difference.seconds < 600:
+                user_obj.email_verified = True
+                user_obj.save()
+                output_status = True
+                output_detail = "otp verified"
+                res_status = status.HTTP_200_OK
+
+            else:
+                output_detail = "invalid"
+        else:
+            output_detail = "Otp and Email are required field"
+        context = {
+            "status": output_status,
+            "detail": output_detail,
+
+        }
+        return Response(context, status=res_status)
+
+
+
 
 
 

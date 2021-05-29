@@ -16,7 +16,9 @@ def get_token(user_object):
 
 def otp_creation(user):
     otp_code = get_random_string(length=6, allowed_chars='1234567890')
-    user.update(otp_code = otp_code, otp_created_at = timezone.now())
+    user.otp_code = otp_code
+    user.otp_created_at = timezone.now()
+    user.save()
 
     subject = 'Account Verification'
     message = f'Hi {user.username}, This mail consist of otp code please enter the otp code for verification of your account. OTP {otp_code} '
