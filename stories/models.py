@@ -9,7 +9,7 @@ class Story(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     file = models.FileField(upload_to= "stories")
     expired = models.BooleanField(default= False)
-    created_at = models.DateTimeField(timezone.now())
+    created_at = models.DateTimeField(default = timezone.now)
 
 
 class Viewer(models.Model):

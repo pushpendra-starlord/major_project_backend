@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        const url = 'ws://127.0.0.1:8000/ws/notification/1/'
+        const ws =  new WebSocket(url)
+        ws.onopen = function (event) {
+            console.log('connection is open')
+        }
+        ws.onclose = function (event) {
+            console.log('connection is close')
+        }
+        setTimeout( function(){
+        var data = {
+            "type" : "LIKE",
+            "id" : 1,
+
+        }
+        ws.onmessage = function(event){
+        console.log('connection has message', event.data)
+    }
+        ws.send(JSON.stringify(data))}, 1000
+        )
+    </script>
+</body>
+
+</html>

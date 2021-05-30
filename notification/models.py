@@ -1,5 +1,5 @@
 from django.db import models
-from blog.models import BlogPost, Comment
+from blog.models import BlogPost
 from authentication.models import User
 
 # Create your models here.
@@ -17,3 +17,6 @@ class NotificationModel(models.Model):
 
     def __str__(self):
         return f"{self.notifier.username} {self.comment}"
+
+
+   
