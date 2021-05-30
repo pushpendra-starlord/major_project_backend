@@ -21,4 +21,7 @@ class StoryStream(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user")
     following_user = models.ForeignKey(User , on_delete= models.CASCADE, related_name="following_user")
     viewed_story = models.ManyToManyField(Story, related_name="viewed_story", blank=True )
+
+    class Meta:
+        unique_together = ("user", "following_user")
     
