@@ -90,7 +90,6 @@ class RegisterView(APIView):
         username = requset.data.get("username")
         password = requset.data.get("password")
         email = requset.data.get("email")
-        
         obj = User.objects.filter(username = username)
         email_obj = User.objects.filter(email= email).first()
         if obj:
@@ -109,9 +108,9 @@ class RegisterView(APIView):
                 if settings.DEBUG ==  True:
                     email_obj.otp_code = "123456"
                     email_obj.otp_created_at = timezone.now()
-                    output_status = True
-                    output_detail = "Success"
-                    res_status = status.HTTP_200_OK
+                    output_status = False
+                    output_detail = "Email is registered but not verified, Please verify email"
+                   
                     
                 
                 else:
@@ -123,7 +122,6 @@ class RegisterView(APIView):
                 }
 
         else:
-            
             user_obj  = User.objects.create(username = username, email = email)
             user_obj.set_password(password)
             if settings.DEBUG == True:
