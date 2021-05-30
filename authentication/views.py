@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from followunfollow.models import Follow, BlockList
 from django.contrib.auth.validators import ASCIIUsernameValidator
 from .serializer import UserProfileSerializer
+from django.conf import settings
 
 validate_username = ASCIIUsernameValidator()
 
@@ -105,16 +106,33 @@ class RegisterView(APIView):
             if email_obj.email_verified == True:
                 output_detail = "user is registered with this email"
             else:
-                otp_creation(email_obj)
+                if settings.DEBUG ==  True:
+                    email_obj.otp_code = "123456"
+                    email_obj.otp_created_at = timezone.now()
+                    output_status = True
+                    output_detail = "Success"
+                    res_status = status.HTTP_200_OK
+                    
+                
+                else:
+                    otp_creation(email_obj)
+
                 output_data = {
                     "email" : email_obj.email,
                     "status" : 1
                 }
 
         else:
+            
             user_obj  = User.objects.create(username = username, email = email)
             user_obj.set_password(password)
-            otp_creation(user_obj)
+            if settings.DEBUG == True:
+                user_obj.otp_code = "123456"
+                user_obj.otp_created_at = timezone.now()
+                user_obj.save()
+            else:
+                otp_creation(user_obj)
+
             Follow.objects.create(user = user_obj)
             block_list = BlockList.objects.create(user = user_obj)
             block_list.blocked.add(1)
@@ -124,12 +142,12 @@ class RegisterView(APIView):
             output_status = True
             output_detail = "Success"
             res_status = status.HTTP_200_OK
-            context = {
+        context = {
                 "status": output_status,
                 "details": output_detail,
                 "data" : output_data,
             }
-            return Response(context, status=res_status, content_type="application/json")
+        return Response(context, status=res_status, content_type="application/json")
 
 
 class ChangePassword(APIView):
