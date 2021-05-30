@@ -19,3 +19,5 @@ class User(AbstractUser):
     mobile_verified = models.BooleanField(default=False)
     about = models.CharField(max_length=1000, null= True, blank= True)
     profile_image = models.ImageField(upload_to='profile_image', default='profile_image/default_image.png')
+    is_online = models.BooleanField(default= False)
+    last_login = models.DateTimeField(default= timezone.now)

@@ -1,3 +1,4 @@
+import re
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -29,3 +30,7 @@ class NotificationView(APIView):
             "data" : output_data
         }
         return Response(context, status = res_status )
+
+
+def test_view(request):
+    return render (request , "test.html")

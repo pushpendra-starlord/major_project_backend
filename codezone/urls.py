@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/blog/', include('blog.urls')),
     path('api/notification/', include('notification.urls')),
     path('api/stories/', include("stories.urls")),
+    path('api/chat/', include("chat.urls"))
 ]
 from django.conf import settings
 from django.conf.urls.static import static
