@@ -1,9 +1,11 @@
+from rest_framework import serializers
+from rest_framework import status
 from chat.models import Thread
 from rest_framework.views import APIView
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.response import Response
 from authentication.models import User
-from .serializers import ChatUserSerializer, MessageSerializer
+from .serializers import ChatUserSerializer, MessageSerializer, ChatListSerializer
 
 
 class PersonalChatView(APIView):
@@ -54,13 +56,28 @@ class PersonalChatView(APIView):
         
 
 
-# class ChatList(APIView):
-#     def get(self, request):
-#         output_status = False
-#         output_detail = "Failed"
-#         res_status = HTTP_400_BAD_REQUEST
-#         output_data = {}
-#         user = request.user
-#         chat_obj = Thread.objects.filter(users = user).order_by()
-#         if chat_obj:
+class ChatListView(APIView):
+    def get(self, request):
+        output_status = False
+        output_detail = "Failed"
+        res_status = HTTP_400_BAD_REQUEST
+        output_data = {}
+        user = request.user
+        chat_obj = Thread.objects.filter(users = user).order_by("-last_message")  
+        if chat_obj:
+            serializer = ChatListSerializer(chat_obj, many = True)
+            output_data = serializer.data
+            output_detail = "Success"
+            res_status = HTTP_200_OK
+            output_status = True
+        else:
+            output_detail = "No chat present yet"
+        
+        context = {
+            "status" : output_status,
+            "detail" : output_detail,
+            "data" : output_data
+        }
+        return Response(context, status = res_status)
+
 
