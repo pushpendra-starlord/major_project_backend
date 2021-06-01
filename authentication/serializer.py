@@ -16,7 +16,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        read_only_fields = ("blue_tick",'id',)
+        read_only_fields = ("blue_tick",'id', 'username')
         fields = ('id','username', "first_name", "last_name", "profile_image", "about", "blue_tick")
 
 

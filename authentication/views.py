@@ -42,8 +42,8 @@ class LoginView(APIView):
 
         elif username_obj.email_verified == False :
             output_status = False
-            res_status = status.HTTP_400_BAD_REQUEST
-            detail = "Email Verificaction"
+            res_status = status.HTTP_302_FOUND
+            detail = "Email Verificaction Pending"
             if email_obj:
                 user = email_obj
             else:
@@ -52,11 +52,16 @@ class LoginView(APIView):
                 "email" : user.email,
                 "status": 1
             }
-            otp_creation(user)
+            if settings.DEBUG == True:
+                user.otp_code = "123456"
+                user.otp_created_at = timezone.now()
+                user.save()
+            else:
+                otp_creation(user)
         elif email_obj.email_verified == False:
             output_status = False
-            res_status = status.HTTP_400_BAD_REQUEST
-            detail = "Email Verificaction"
+            res_status = status.HTTP_302_FOUND
+            detail = "Email Verificaction Pending"
             if email_obj:
                 user = email_obj
             else:
@@ -65,7 +70,12 @@ class LoginView(APIView):
                 "email" : user.email,
                 "status": 1
             }
-            otp_creation(user)
+            if settings.DEBUG == True:
+                user.otp_code = "123456"
+                user.otp_created_at = timezone.now()
+                user.save()
+            else:
+                otp_creation(user)
         else:
             detail = "Entered data is not associated to any account"
             output_status = False
