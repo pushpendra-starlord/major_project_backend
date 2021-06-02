@@ -2,6 +2,8 @@ from rest_framework import serializers
 from shared.serializer import CustomModelSerializer
 from blog.models  import *
 from authentication.serializer import UserSerializer
+from django.utils import timezone
+import datetime
 
 
 
@@ -17,9 +19,13 @@ class LikePostSerializer(CustomModelSerializer):
         model = Like
         fields = ("user",)
 
-class BlogPostSerializer(CustomModelSerializer):
+class BlogPostSerializer(serializers.ModelSerializer):
     comment= serializers.SerializerMethodField()
     like=serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+    user = UserSerializer(read_only = True)
+    created_at = serializers.SerializerMethodField()
     class Meta:
         model = BlogPost
         fields = "__all__"
@@ -45,3 +51,38 @@ class BlogPostSerializer(CustomModelSerializer):
             })
             return data 
         return "" 
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request:
+            data = Like.objects.filter(pk = obj.id , user = request.user).first()
+            if data:
+                return True
+            else:
+                return False
+        return ""
+
+    def get_owner(self,obj):
+        request = self.context.get('request')
+        if request:
+            if obj.user == request.user:
+                return True
+            else:
+                return False
+        return ""
+
+    def get_created_at(self, obj):
+        created_at = obj.created_at
+        difference = timezone.now() - created_at
+        if difference.days > 0:
+            return f"{difference.days} days ago"
+        else:
+            hour = difference.seconds//3600
+            if hour > 0:
+                return f"{hour} hours ago"
+            elif difference.seconds//60 > 1 :
+                return f"{difference//60} minutes ago"
+            else:
+                return "Just now"
+            
+        return ""

@@ -47,6 +47,10 @@ class CommentView(CreateUpdateDeleteView):
     model=Comment
     serializer=CommentSerializer
 
+
+
+# For getting blogs
+
 class ListBlogView(APIView):
     def get_follower(self,user):
         following_list = list(Follow.objects.filter(user = user).values_list("following", flat = True))
@@ -90,13 +94,14 @@ class ListBlogView(APIView):
         private_post=all_post.filter(user_id__in=following_list,view_type=2)
         final=public_post[5 * (page - 1):5 * page] | private_post[5 * (page - 1):5 * page] 
         if final:
-            serializer=BlogPostSerializer(final,many=True)
+            serializer=BlogPostSerializer(final, context={'request': request}, many=True)
             output_status=True
             output_detail="Success"
             res_status=status.HTTP_200_OK
             data=serializer.data
         else:
             output_detail = "No content"
+            data["end"] = True
         context={
             "status":output_status,
             "detail":output_detail,
