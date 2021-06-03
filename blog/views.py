@@ -1,9 +1,4 @@
-import re
-from django.db.models.deletion import RestrictedError
-from django.shortcuts import render
-from django.views.generic.base import View
-from rest_framework import views
-from rest_framework.settings import APISettings, import_from_string
+
 from blog.serializer import *
 from blog.models import *
 from shared.views import CreateUpdateDeleteView
@@ -11,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from followunfollow.models import Follow , BlockList
+
 
 # Create your views here.
            
@@ -41,11 +37,13 @@ class BlogPostView(CreateUpdateDeleteView):
         }
         return Response (context, status = res_status)
 
+    
 
 
-class CommentView(CreateUpdateDeleteView):
-    model=Comment
-    serializer=CommentSerializer
+
+
+
+
 
 
 
@@ -142,34 +140,53 @@ class LikeView(APIView):
         return Response(context, status=res_status)
     
 
-    def post(self, request, id):
+class CommentView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        page = request.GET.get('page', '')
+        try:
+            page = int(page)
+        except Exception as  e:
+            page = 1
         output_status=False
         output_detail="Falied"
         res_status=status.HTTP_400_BAD_REQUEST
-        post_obj = BlogPost.objects.filter(pk = id).first()
-        if post_obj:
-            try:
-                Like.objects.create(user = request.user, post = post_obj)
+        end = True
+        output_data = {}
+        post_id = kwargs.get("id")
+        if post_id:
+            comment_obj = Comment.objects.filter(post_id = post_id)[10 * (page - 1):10 * page]
+            if comment_obj:
+                if len(comment_obj) > 10:
+                    end = False
+                serializer = CommentSerializer(comment_obj, many = True)
                 output_status = True
-                output_detail = "Liked"
+                output_detail = "success"
+                output_data = serializer.data
                 res_status = status.HTTP_200_OK
-            except Exception as e:
-                like_obj = Like.objects.filter(user = request.user, post = post_obj)
-                like_obj.delete()
-                output_status = True
-                output_detail = "Unliked"
-                res_status = status.HTTP_200_OK
-        else:
-            output_detail = "Invalid Post id"
-        context={
-            "status":output_status,
-            "detail":output_detail,
+            else:
+                end = True
+                output_detail = "No Comment"
+        context = {
+            "status" : output_status,
+            "end" : end,
+            "detail" : output_detail,
+            "data" : output_data
         }
-        return Response(context, status=res_status)
+
+        return Response(context, status = res_status)
+
+                 
 
 
 
             
+
+        
+        
+
+
+
 
 
 
