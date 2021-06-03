@@ -1,4 +1,3 @@
-
 from blog.serializer import *
 from blog.models import *
 from shared.views import CreateUpdateDeleteView
@@ -39,16 +38,7 @@ class BlogPostView(CreateUpdateDeleteView):
 
     
 
-
-
-
-
-
-
-
-
 # For getting blogs
-
 class ListBlogView(APIView):
     def get_follower(self,user):
         following_list = list(Follow.objects.filter(user = user).values_list("following", flat = True))
@@ -107,7 +97,7 @@ class ListBlogView(APIView):
         }
         return Response(context, status=res_status)
 
-
+# for liking
 class LikeView(APIView):
     def get(self, request, id):
         page = request.GET.get('page', '')
@@ -139,9 +129,8 @@ class LikeView(APIView):
         }
         return Response(context, status=res_status)
     
-
+# For comment
 class CommentView(APIView):
-
     def get(self, request, *args, **kwargs):
         page = request.GET.get('page', '')
         try:
