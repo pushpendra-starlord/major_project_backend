@@ -10,7 +10,7 @@ from followunfollow.models import Follow, BlockList
 from django.contrib.auth.validators import ASCIIUsernameValidator
 from .serializer import UserProfileSerializer
 from django.conf import settings
-
+from followunfollow.models import Follow , BlockList
 validate_username = ASCIIUsernameValidator()
 
 
@@ -253,13 +253,24 @@ class ProfileView(APIView):
         output_detail = "Unexpected Error"
         output_data = {} 
         user = request.user
+        following , block = False , False
         id = request.GET.get('id')
         if id:
             user = User.objects.filter(pk = id).first()
             if user:
-                pass
-            else:
-                user = None
+                follow_obj = Follow.objects.filter(user = request.user).first()
+                follow_list = follow_obj.values_list("following", flat = True)
+                block_obj = BlockList.objects.filter(user = request.user).first()
+                block_list = block_obj.values_list("blocked", flat = True)
+                if id in list(follow_list):
+                    following = True
+                if id in list(block_list):
+                    block = True
+
+                context = {
+                    "is_following" : following,
+                    "is_blocked" : block
+                }
         else:
             user = request.user
         if user:
