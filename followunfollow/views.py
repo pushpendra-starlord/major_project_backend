@@ -7,6 +7,7 @@ from .models import Follow, BlockList
 from .serializers import FollowSerializer, BlockSerializer
 from rest_framework.exceptions import MethodNotAllowed
 from .utils import unfollow_block, unblock, unfollow
+from notification.models import NotificationModel
 
 # Create your views here.
 
@@ -107,8 +108,13 @@ class FollowList(FollowBLockApiView):
                         obj = self.get_queryset(request)
                         obj.following.add(id)
                         other_list = self.MODELCLASS.objects.get(user__id = id)
-                        print(other_list)
                         other_list.follower.add(user.id)
+                        NotificationModel.objects.create(
+                            user_id = id,
+                            type = 1,
+                            notifier = user,
+                            comment = f'{user.first_name} {user.last_name} started following you.'
+                        )
                         output_status = True
                         output_detail = "Success"
                         res_status = status.HTTP_200_OK
