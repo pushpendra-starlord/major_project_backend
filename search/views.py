@@ -22,7 +22,7 @@ class SearchUserView(APIView):
 
 
     def post(self, request):
-        output_status = True
+        output_status = False
         output_detail = "Failed"
         output_data = {}
         res_status = HTTP_400_BAD_REQUEST

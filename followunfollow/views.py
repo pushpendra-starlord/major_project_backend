@@ -106,9 +106,10 @@ class FollowList(FollowBLockApiView):
                         output_detail = "You already Followed the User"
                     else:
                         obj = self.get_queryset(request)
-                        obj.following.add(id)
-                        other_list = self.MODELCLASS.objects.get(user__id = id)
-                        other_list.follower.add(user.id)
+                        z = User.objects.get(pk = int(id))
+                        obj.following.add(z)
+                        other_list = self.MODELCLASS.objects.get(user = z)
+                        other_list.follower.add(user)
                         NotificationModel.objects.create(
                             user_id = id,
                             type = 1,
