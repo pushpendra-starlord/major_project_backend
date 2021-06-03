@@ -16,6 +16,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from search.views import SearchUserView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,7 +25,8 @@ urlpatterns = [
     path('api/blog/', include('blog.urls')),
     path('api/notification/', include('notification.urls')),
     path('api/stories/', include("stories.urls")),
-    path('api/chat/', include("chat.urls"))
+    path('api/chat/', include("chat.urls")),
+    path('api/search/', SearchUserView.as_view())
 ]
 from django.conf import settings
 from django.conf.urls.static import static
