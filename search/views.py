@@ -7,10 +7,19 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from authentication.models import User
 from authentication.serializer import UserSerializer
+from followunfollow.models import BlockList
 
 
 
 class SearchUserView(APIView):
+    def get_block_list(self, user):
+        restricted =list( BlockList.objects.filter(user = user).values_list("restricted" , flat=True))
+        if restricted:
+            return restricted
+        else:
+            return None
+
+
 
     def post(self, request):
         output_status = True
@@ -20,19 +29,21 @@ class SearchUserView(APIView):
         data = request.data.get("data")
         if data:
             data = data.split(" ")
+            restricted = self.get_block_list(request.user)
+            if restricted:
+                all_user = User.objects.all().exclude(pk__in = restricted).exclude(pk = request.user.id)  
+            else:
+                all_user = User.objects.all().exclude(pk = request.user.id)  
             if len(data) >0:
                 if len(data) == 1:
-                    print(data)
-                    qs1 = User.objects.filter(username__icontains = data[0])
-                    qs2 = User.objects.filter(first_name__icontains = data[0])
-                    qs3 = User.objects.filter(last_name__icontains = data[0])
+                    qs1 = all_user.filter(username__icontains = data[0])
+                    qs2 = all_user.filter(first_name__icontains = data[0])
+                    qs3 = all_user.filter(last_name__icontains = data[0])
                     
                 else:
-                    qs1 = User.objects.filter(username__icontains = data[0])
-                    qs2 = User.objects.filter(first_name__icontains = data[0])
-                    qs3 = User.objects.filter(last_name__icontains = data[1])
-                    
-                
+                    qs1 = all_user.filter(username__icontains = data[0])
+                    qs2 = all_user.filter(first_name__icontains = data[0])
+                    qs3 = all_user.filter(last_name__icontains = data[1])
                 qs = qs1.union(qs2, qs3)
                 serializer = UserSerializer(qs, many = True)
                 output_detail = "Success"
