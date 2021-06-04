@@ -36,7 +36,7 @@ class BlogPostSerializer(serializers.ModelSerializer):
         if comment_data:
             data=CommentSerializer(comment_data[:2],many=True).data
             data.append({
-                "count":comment_data.count()-2 if comment_data.count() > 2 else None
+                "count":comment_data.count()-2 if comment_data.count() > 2 else ""
             })
             return data 
         return "" 
@@ -47,8 +47,9 @@ class BlogPostSerializer(serializers.ModelSerializer):
         if like_data:
             data=LikePostSerializer(like_data[:1],many=True).data
             data.append({
-                "count":like_data.count()-1 if like_data.count() > 1 else None
+                "count":like_data.count()-1 if like_data.count() > 1 else ""
             })
+            print(data)
             return data 
         return "" 
 
