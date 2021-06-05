@@ -4,7 +4,7 @@ from blog.models import BlogPost
 from authentication.utils import get_token, otp_creation, get_following_count
 from rest_framework.views import APIView
 from .models import User
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from followunfollow.models import Follow, BlockList
 from django.contrib.auth.validators import ASCIIUsernameValidator
@@ -258,16 +258,14 @@ class ProfileView(APIView):
         if id:
             user = User.objects.filter(pk = id).first()
             if user:
-                follow_obj = Follow.objects.filter(user = request.user).first()
-                follow_list = follow_obj.values_list("following", flat = True)
-                block_obj = BlockList.objects.filter(user = request.user).first()
-                block_list = block_obj.values_list("blocked", flat = True)
-                if id in list(follow_list):
+                follow_obj = Follow.objects.filter(user = request.user).values_list("following", flat = True)
+                block_obj = BlockList.objects.filter(user = request.user).values_list("blocked", flat = True)
+                if id in list(follow_obj):
                     following = True
-                if id in list(block_list):
+                if id in list(block_obj):
                     block = True
 
-                context = {
+                output_data = {
                     "is_following" : following,
                     "is_blocked" : block
                 }
@@ -281,12 +279,16 @@ class ProfileView(APIView):
                 page = int(page)
             except Exception as  e:
                 page = 1
-            blog_obj = BlogPost.objects.filter(user = user)[12 * (page - 1):12 * page] 
-            output_data["blogs"] = BlogPostSerializer(blog_obj, many =True).data
+            blog_obj = BlogPost.objects.filter(user = user)
+            if blog_obj:
+                serializer = BlogPostSerializer(blog_obj,context={'request': request}, many =True)
+                output_data["blogs"] = serializer.data
+            else:
+                output_data["blogs"] = "None"
             output_status = True
             output_detail = "Success"
             res_status = status.HTTP_200_OK
-        
+            
         context = {
             "status": output_status,
             "detail": output_detail,
