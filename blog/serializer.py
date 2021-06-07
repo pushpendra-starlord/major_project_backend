@@ -1,3 +1,4 @@
+from django.db.models import fields
 from rest_framework import serializers
 from shared.serializer import CustomModelSerializer
 from blog.models  import *
@@ -86,3 +87,8 @@ class BlogPostSerializer(serializers.ModelSerializer):
                 return "Just now"
             
         return ""
+
+class CreateBlogSerializer(CustomModelSerializer):
+    class Meta:
+        model = BlogPost
+        fields = "__all__"
