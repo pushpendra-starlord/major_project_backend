@@ -107,9 +107,12 @@ class FollowList(FollowBLockApiView):
                     else:
                         obj = self.get_queryset(request)
                         z = User.objects.get(pk = int(id))
+                        print(obj, "point 11111111")
                         obj.following.add(z)
                         other_list = self.MODELCLASS.objects.get(user = z)
                         other_list.follower.add(user)
+                        print(other_list, "pont 22")
+                        print(request.user.username)
                         NotificationModel.objects.create(
                             user_id = id,
                             type = 1,

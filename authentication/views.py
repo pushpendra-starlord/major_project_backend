@@ -253,21 +253,35 @@ class ProfileView(APIView):
         output_detail = "Unexpected Error"
         output_data = {} 
         user = request.user
-        following , block = False , False
-        id = request.GET.get('id')
+        
+        following  = False
+        
+        id = int(request.GET.get('id'))
         if id:
             user = User.objects.filter(pk = id).first()
             if user:
-                follow_obj = Follow.objects.filter(user = request.user).values_list("following", flat = True)
+                follow_obj = list(Follow.objects.filter(user = request.user).values_list("following", flat=True))
                 block_obj = BlockList.objects.filter(user = request.user).values_list("blocked", flat = True)
-                if id in list(follow_obj):
+                if id in follow_obj:
                     following = True
-                if id in list(block_obj):
-                    block = True
-
+                elif id in list(block_obj):
+                    output_status = True
+                    output_detail = "Success"
+                    res_status = status.HTTP_200_OK
+                    output_data = {
+                        "block" : True,
+                        "user" : UserProfileSerializer(user).data,
+                        "count" : get_following_count(user)
+                    }
+                    context = {
+                        "status": output_status,
+                        "detail": output_detail,
+                        "data" : output_data
+                    }
+                    return Response(context, status=res_status)
+                    
                 output_data = {
                     "is_following" : following,
-                    "is_blocked" : block
                 }
         else:
             user = request.user
