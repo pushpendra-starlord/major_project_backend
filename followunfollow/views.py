@@ -201,6 +201,7 @@ class UnfollowView(APIView):
                 unfollow(user, id)
                 output_status = True
                 output_detail = "unfollowed"
+                res_status = status.HTTP_200_OK
             else:
                 output_detail = "invalid id"
         context = {
