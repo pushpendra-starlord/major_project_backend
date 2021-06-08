@@ -20,15 +20,15 @@
         }
         setTimeout( function(){
         var data = {
-            "type" : "LIKE",
+            "type" : "COMMENT",
             "id" : 1,
+            "content" : "abc xyz 10 2030"
 
         }
         ws.onmessage = function(event){
         console.log('connection has message', event.data)
     }
-        ws.send(JSON.stringify(data))}, 1000
-        )
+        ws.send(JSON.stringify(data))}, 1000)
     </script>
 </body>
 

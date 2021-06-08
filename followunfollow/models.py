@@ -7,7 +7,7 @@ from authentication.models import User
 
 class Follow(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    follower = models.ManyToManyField(User, related_name="followers", blank=True)
+    follower = models.ManyToManyField(User, related_name="follower", blank=True)
     following = models.ManyToManyField(User, related_name="following", blank=True)
 
     def __str__(self):
