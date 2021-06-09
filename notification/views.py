@@ -23,6 +23,7 @@ class NotificationView(APIView):
             res_status = HTTP_200_OK
         else:
             output_detail = "No notification available"
+            res_status = HTTP_200_OK
         
         context = {
             "status" : output_status,

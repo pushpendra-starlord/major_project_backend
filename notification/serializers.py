@@ -17,7 +17,8 @@ class NotificationModelSerializer(serializers.ModelSerializer):
             if obj.type == 1:
                 return {
                     "username" : notifier_user.username,
-                    "pic" : notifier_user.profile_image.url
+                    "pic" : notifier_user.profile_image.url,
+                    "id" : notifier_user.id
                 }
             else:
                 return notifier_user.username
