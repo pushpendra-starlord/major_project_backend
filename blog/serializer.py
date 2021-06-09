@@ -10,9 +10,28 @@ import datetime
 
 class CommentSerializer(CustomModelSerializer):
     user=UserSerializer(read_only=True)
+    created_at = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
         fields = "__all__"
+
+    def get_created_at(self, obj):
+        created = obj.created_at
+        if created:
+            difference = timezone.now() - created
+            if difference.days > 0:
+                return f"{difference.days} days ago"
+            else:
+                hour = difference.seconds//3600
+                if hour > 0:
+                    return f"{hour} hours ago"
+                elif difference.seconds//60 > 1 :
+                    return f"{difference//60} minutes ago"
+                else:
+                    return "Just now"
+
+
 
 class LikePostSerializer(CustomModelSerializer):
     user=UserSerializer(read_only=True)
