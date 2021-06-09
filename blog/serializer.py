@@ -69,7 +69,6 @@ class BlogPostSerializer(serializers.ModelSerializer):
             data.append({
                 "count":like_data.count()-1 if like_data.count() > 1 else ""
             })
-            print(data)
             return data 
         return "" 
 

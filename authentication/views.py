@@ -256,7 +256,7 @@ class ProfileView(APIView):
         
         following  = False
         
-        id = int(request.GET.get('id'))
+        id = int(request.GET.get('id')) if request.GET.get('id') else None
         if id:
             user = User.objects.filter(pk = id).first()
             if user:
