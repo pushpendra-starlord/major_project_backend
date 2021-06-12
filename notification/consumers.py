@@ -23,6 +23,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
         if id == self.scope['user'].id:
             await self.update_status(True)
+        
 
         await self.accept()
 
