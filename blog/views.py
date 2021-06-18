@@ -22,7 +22,7 @@ class BlogPostView(CreateUpdateDeleteView):
         id = request.GET.get("id")
         if id:
             post_obj = self.model.objects.filter(pk = id).first()
-            serializer = BlogPostSerializer(post_obj)
+            serializer = BlogPostSerializer(post_obj, context={'request': request})
             output_status = True
             output_data = serializer.data
             output_detail = "Success"
@@ -43,8 +43,8 @@ class BlogPostView(CreateUpdateDeleteView):
         res_status = status.HTTP_400_BAD_REQUEST
         output_data = {}
         user = request.user
-        extra_data = {'user' : user}
-        serializer = self.serializer(data = request.deta, extra_data=extra_data)
+        extra_data = {'user' : user.id}
+        serializer = self.serializer(data = request.data, extra_data=extra_data)
         if serializer.is_valid():
             serializer.save()
             output_status = True
