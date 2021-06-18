@@ -109,10 +109,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'codezone.wsgi.application'
 
+TESTING = config('TESTING', default=False, cast=bool)
 
 # Channels config
 ASGI_APPLICATION = 'codezone.routing.application'
-if DEBUG:
+if TESTING:
     CHANNEL_LAYERS = {
             "default": {
                 "BACKEND": "channels.layers.InMemoryChannelLayer"
@@ -131,7 +132,7 @@ else:
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-if DEBUG:
+if TESTING:
 
     DATABASES = {
         'default': {
