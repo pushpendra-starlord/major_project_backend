@@ -120,17 +120,13 @@ class RegisterView(APIView):
                     email_obj.otp_created_at = timezone.now()
                     output_status = False
                     output_detail = "Email is registered but not verified, Please verify email"
-                   
-                    
-                
                 else:
                     otp_creation(email_obj)
-
+                res_status = status.HTTP_200_OK
                 output_data = {
                     "email" : email_obj.email,
                     "status" : 1
                 }
-
         else:
             user_obj  = User.objects.create(username = username, email = email)
             user_obj.set_password(password)
