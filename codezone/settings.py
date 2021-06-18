@@ -109,7 +109,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'codezone.wsgi.application'
 
-TESTING = config('TESTING', default=False, cast=bool)
+TESTING = config('TESTING', default=True, cast=bool)
 
 # Channels config
 ASGI_APPLICATION = 'codezone.routing.application'
