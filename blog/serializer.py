@@ -75,7 +75,7 @@ class BlogPostSerializer(serializers.ModelSerializer):
     def get_is_liked(self, obj):
         request = self.context.get('request')
         if request:
-            data = Like.objects.filter(pk = obj.id , user = request.user).first()
+            data = Like.objects.filter(post = obj , user = request.user).first()
             if data:
                 return True
             else:
