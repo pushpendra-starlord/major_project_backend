@@ -3,7 +3,7 @@ from asgiref.sync import sync_to_async
 from django.utils import timezone
 from authentication.models import User
 
-from .models import Thread, Message
+from .models import Thread, Message, InScreenHistory
 import json
 from channels.db import database_sync_to_async
 from django.utils import timezone
@@ -22,6 +22,16 @@ class ChatConsumer(AsyncConsumer):
         
         await self.send({
             'type': 'websocket.accept'
+        })
+        await self.update_user_status(True)
+        msg = json.dumps({
+            "user" : str(self.scope['user'].username),
+            "online" : self.scope['user'].is_online,
+            "in_screen" : True
+        })
+        await self.channel_layer.group_send(self.room_name, {
+            'type': 'websocket.message',
+            "text": msg
         })
     
 
@@ -47,6 +57,16 @@ class ChatConsumer(AsyncConsumer):
         )
 
     async def websocket_disconnect(self, event):
+        await self.update_user_status(False)
+        msg = json.dumps({
+            "user" : str(self.scope['user'].username),
+            "online" : self.scope['user'].is_online,
+            "in_screen" : False
+        })
+        await self.channel_layer.group_send(self.room_name, {
+            'type': 'websocket.message',
+            "text": msg
+        })
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
     @database_sync_to_async
@@ -58,4 +78,23 @@ class ChatConsumer(AsyncConsumer):
         )
         self.thread_obj.last_message = timezone.now()
         self.thread_obj.save()
+
+    
+    @database_sync_to_async
+    def update_in_screen(self, in_screen):
+        cnt = InScreenHistory.objects.filter(thread = self.thread_obj, user = self.scope['user'])
+        if cnt == 0:
+            cnt = InScreenHistory.objects.create(thread = self.thread_obj, user = self.scope['user'])   
+        if in_screen == True:
+            cnt.in_screen = True
+            cnt.save()
+        else:
+            cnt.in_screen = False
+            cnt.save()
+
+
+
+
+
+    
     
