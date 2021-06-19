@@ -81,12 +81,12 @@ class ChatConsumer(AsyncConsumer):
 
     
     @database_sync_to_async
-    def update_in_screen(self, in_screen):
+    def update_in_screen(self, bool):
         cnt = InScreenHistory.objects.filter(thread = self.thread_obj, user = self.scope['user']).first()
         if cnt == 0:
             cnt = InScreenHistory.objects.create(thread = self.thread_obj, user = self.scope['user']) 
             cnt = InScreenHistory.objects.filter(thread = self.thread_obj, user = self.scope['user']).first()  
-        if in_screen == True:
+        if bool == True:
             cnt.in_screen = True
             cnt.save()
         else:
