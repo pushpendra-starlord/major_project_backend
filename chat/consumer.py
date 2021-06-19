@@ -23,7 +23,7 @@ class ChatConsumer(AsyncConsumer):
         await self.send({
             'type': 'websocket.accept'
         })
-        await self.update_user_status(True)
+        await self.update_in_screen(True)
         msg = json.dumps({
             "user" : str(self.scope['user'].username),
             "online" : self.scope['user'].is_online,
