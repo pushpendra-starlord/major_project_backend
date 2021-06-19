@@ -34,7 +34,7 @@ class LoginView(APIView):
                 detail = "Incorrect password"
         elif email_obj and email_obj.email_verified:
             if email_obj.check_password(password):
-                data = get_token(username_obj)
+                data = get_token(email_obj)
             else:
                 output_status = False
                 res_status = status.HTTP_400_BAD_REQUEST

@@ -17,3 +17,10 @@ python manage.py runserver
 
 
 
+## Final System relaod
+```
+sudo systemctl daemon-reload
+sudo systemctl restart redis-server
+sudo systemctl restart daphne
+sudo systemctl restart nginx
+```

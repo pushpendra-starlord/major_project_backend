@@ -29,7 +29,11 @@ class FollowBLockApiView(APIView):
         output_detail = "Failed"
         res_status = status.HTTP_400_BAD_REQUEST
         output_data = {}
-        obj = self.get_queryset(request)
+        id = request.GET.get("id")
+        if id:
+            obj = self.MODELCLASS.objects.filter(user_id = id).first()
+        else:
+            obj = self.get_queryset(request)
         if obj:
             serializer = self.SERIALIZER_CLASS(obj)
             output_data = serializer.data

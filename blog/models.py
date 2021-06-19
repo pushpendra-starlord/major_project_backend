@@ -2,6 +2,10 @@ from django.db import models
 from django.db.models import constraints
 from authentication.models import User
 from django.utils import timezone
+from PIL import Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
 # Create your models here.
 
 class BlogPost(models.Model):
@@ -13,8 +17,10 @@ class BlogPost(models.Model):
     created_at = models.DateTimeField(default = timezone.now)
     last_updated_at = models.DateTimeField(auto_now = True)
     content = models.TextField(null=True, blank=True)
-    image = models.FileField(null=True, blank=True)
+    image = models.ImageField(null=True, blank=True)
     view_type = models.PositiveSmallIntegerField(choices=VIEW_TYPE, default=1, blank=True)
+
+
     
 
     class Meta:
