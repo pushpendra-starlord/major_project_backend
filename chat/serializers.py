@@ -9,7 +9,7 @@ from .models import Message, Thread
 class ChatUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "username", "first_name", "last_name", "is_active", "profile_image")
+        fields = ("id", "username", "first_name", "last_name", "is_online", "profile_image")
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class ChatListSerializer(serializers.ModelSerializer):
     last_message_data = serializers.SerializerMethodField()
     class Meta:
         model = Thread
-        fields = ( "last_message", "user", "last_message_data",)
+        fields = ( "id","last_message", "user", "last_message_data",)
 
     def get_user(self, obj):
         users = obj.users.all()
@@ -40,4 +40,4 @@ class ChatListSerializer(serializers.ModelSerializer):
                 return serializer.data
         else:
             return "No message yet"
-        return ""
+        return ""   

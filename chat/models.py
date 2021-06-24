@@ -48,6 +48,3 @@ class InScreenHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     in_screen = models.BooleanField(default=False)
 
-
-    class Meta:
-        unique_together = ("thread", "user")
