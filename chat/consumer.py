@@ -19,21 +19,25 @@ class ChatConsumer(AsyncConsumer):
         self.room_name = f'personal_thread_{self.thread_obj.id}'
 
         await self.channel_layer.group_add(self.room_name, self.channel_name)
-
+        msg = json.dumps({
+            self.scope['user'].username : True,
+            other_username : await self.get_in_screen_status(other_user)
+        })
         await self.send({
-            'type': 'websocket.accept'
+            'type': 'websocket.accept',
+            "text" : msg
         })
 
         await self.update_in_screen_status(True)
 
-        msg = json.dumps({
-            "username": self.scope['user'].username,
-            "in_screen": True
-        })
-        await self.channel_layer.group_send(self.room_name, {
-            'type': 'websocket.message',
-            "text": msg
-        })
+        # msg = json.dumps({
+        #     "username": self.scope['user'].username,
+        #     "in_screen": True
+        # })
+        # await self.channel_layer.group_send(self.room_name, {
+        #     'type': 'websocket.message',
+        #     "text": msg
+        # })
 
     async def websocket_receive(self, event):
         msg = json.dumps({
@@ -91,7 +95,19 @@ class ChatConsumer(AsyncConsumer):
                 thread_id=self.thread_obj.id, user_id=self.scope['user'].id)
         obj.in_screen = interupt
         obj.save()
-
+        
+    @database_sync_to_async
+    def get_in_screen_status(self, user_obj):
+        try:
+            obj = InScreenHistory.objects.get(
+                thread_id=self.thread_obj.id, user_id = user_obj.id
+            )
+        except InScreenHistory.DoesNotExist:
+            InScreenHistory.objects.create(thread_id=self.thread_obj.id, user_id = user_obj.id)
+            obj = InScreenHistory.objects.get(
+                thread_id=self.thread_obj.id, user_id = user_obj.id
+            )
+        return obj.in_screen
 
 class GlobalChatConsumer(AsyncConsumer):
 
@@ -119,7 +135,7 @@ class GlobalChatConsumer(AsyncConsumer):
         user = self.scope['user']
         username = self.scope['url_route']['kwargs']['username']
         
-        other_user = await sync_to_async(User.objects.get)(username=user)
+        other_user = await sync_to_async(User.objects.get)(username=username)
         self.thread_obj = await sync_to_async(Thread.objects.get_or_create_personal_thread)(user, other_user)
 
         msg = json.dumps({
