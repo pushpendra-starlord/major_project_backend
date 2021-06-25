@@ -144,8 +144,8 @@ class GlobalChatConsumer(AsyncConsumer):
 
         msg = json.dumps({
                 "id": self.thread_obj.id,
-                "message": event.get("text"),
-                'user': self.scope['user'].username,
+                "text": event.get("text"),
+                'username': self.scope['user'].username,
                 "time" : f"{timezone.now().hour}: {timezone.now().minute}"
 
             })
