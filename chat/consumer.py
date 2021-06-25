@@ -25,7 +25,7 @@ class ChatConsumer(AsyncConsumer):
         })
         await self.send({
             'type': 'websocket.accept',
-            "text" : msg
+            
         })
 
         await self.update_in_screen_status(True)
@@ -34,15 +34,16 @@ class ChatConsumer(AsyncConsumer):
         #     "username": self.scope['user'].username,
         #     "in_screen": True
         # })
-        # await self.channel_layer.group_send(self.room_name, {
-        #     'type': 'websocket.message',
-        #     "text": msg
-        # })
+        await self.channel_layer.group_send(self.room_name, {
+            'type': 'websocket.message',
+            "text": msg
+        })
 
     async def websocket_receive(self, event):
         msg = json.dumps({
             'text': event.get('text'),
-            'username': self.scope['user'].username
+            'username': self.scope['user'].username,
+            "time" : f"{timezone.now().hour}: {timezone.now().minute}"
         })
         await self.store_message(event.get('text'))
 
@@ -62,10 +63,13 @@ class ChatConsumer(AsyncConsumer):
 
     async def websocket_disconnect(self, event):
         await self.update_in_screen_status(False)
+        other_username = self.scope['url_route']['kwargs']['username']
+
+        other_user = await sync_to_async(User.objects.get)(username=other_username)
 
         msg = json.dumps({
-            "username": self.scope['user'].username,
-            "in_screen": False
+            self.scope['user'].username : await self.get_in_screen_status(self.scope['user']) ,
+            other_username : await self.get_in_screen_status(other_user)
         })
         await self.channel_layer.group_send(self.room_name, {
             'type': 'websocket.message',
@@ -118,6 +122,7 @@ class GlobalChatConsumer(AsyncConsumer):
             self.room_name,
             self.channel_name
         )
+
         await self.send({
             'type': 'websocket.accept'
         })
@@ -130,7 +135,6 @@ class GlobalChatConsumer(AsyncConsumer):
             'type': 'websocket.send',
             "text": event["text"],
         })
-
     async def websocket_receive(self, event):
         user = self.scope['user']
         username = self.scope['url_route']['kwargs']['username']
@@ -140,14 +144,17 @@ class GlobalChatConsumer(AsyncConsumer):
 
         msg = json.dumps({
                 "id": self.thread_obj.id,
-                "message": event.get("text"),
-                'user': self.scope['user'].username
+                "text": event.get("text"),
+                'username': self.scope['user'].username,
+                "time" : f"{timezone.now().hour}: {timezone.now().minute}"
+
             })
+       
         await self.channel_layer.group_send(self.room_name, {
                 'type': 'websocket.message',
                 "text": msg
             })
-
+        
         await self.store_message(event.get("text"))
 
     @database_sync_to_async

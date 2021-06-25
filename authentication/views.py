@@ -27,14 +27,23 @@ class LoginView(APIView):
         email_obj = User.objects.filter(email = login_data ).first()
         if username_obj and username_obj.email_verified:
             if username_obj.check_password(password):
-                data = get_token(username_obj)
+                data = {
+                    "token" : get_token(username_obj),
+                    "username" : username_obj.username,
+                    "user_id" : username_obj.id,
+                }
+               
             else:
                 output_status = False
                 res_status = status.HTTP_400_BAD_REQUEST
                 detail = "Incorrect password"
         elif email_obj and email_obj.email_verified:
             if email_obj.check_password(password):
-                data = get_token(email_obj)
+                data = {
+                    "token" : get_token(username_obj),
+                    "username" : username_obj.username,
+                    "user_id" : username_obj.id,
+                }
             else:
                 output_status = False
                 res_status = status.HTTP_400_BAD_REQUEST
@@ -336,6 +345,7 @@ class EmailVerification(APIView):
         res_status = status.HTTP_400_BAD_REQUEST
         output_detail = "Unexpected Error"
         email = request.data.get("email", '')
+        print(email)
         otp = request.data.get("otp", "")
         if email and otp:
             user_obj = User.objects.filter(email= email).first()
