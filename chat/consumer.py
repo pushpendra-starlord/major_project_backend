@@ -225,22 +225,36 @@ class PersonalChatConsumer(AsyncWebsocketConsumer):
     
 
     async def receive(self, text_data):
-        print(text_data)
+        
         data = json.loads(text_data)
-        if data['message']:
+        if data['type'] == "MESSAGE":
             msg = json.dumps({
                 'username': self.scope['user'].username,
                 "time" : f"{timezone.now().hour}: {timezone.now().minute}",
-                "text": data['message']
+                "data": {"text":data['content']}
             })
-            await self.store_message(data,msg)
+            await self.store_message(text = data["content"], post_id = None)
         else:
-            model=BlogPost.objects.get(pk=data["post"])
-            msg = json.dumps({
+            try:
+                blog_obj = await sync_to_async (BlogPost.objects.get)(pk=data["content"])
+                msg = json.dumps({
                 'username': self.scope['user'].username,
                 "time" : f"{timezone.now().hour}: {timezone.now().minute}",
-                "text": model
-            })
+                "data" : {
+                    "username" : blog_obj.user.username,
+                    "image" : blog_obj.image.url
+                    }
+                })
+                await self.store_message(text = None, post_id = data["content"] )
+            except Exception as e:
+                pass
+        await self.channel_layer.group_send(self.room_name, {
+            'type': 'websocket.message',
+            "text": msg
+        })
+        
+
+           
 
 
 
