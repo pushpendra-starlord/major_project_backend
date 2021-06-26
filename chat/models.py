@@ -1,3 +1,4 @@
+from blog.models import BlogPost
 from authentication.models import User
 from chat.managers import ThreadManager
 from django.db import models
@@ -31,6 +32,10 @@ class Thread(TrackingModel):
 class Message(TrackingModel):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
     sender = models.ForeignKey('authentication.User', on_delete=models.CASCADE)
+    liked = models.BooleanField(default= False)
+    image = models.ImageField(upload_to ="message/photos",blank=True)
+    seen = models.BooleanField(default= False)
+    post = models.ForeignKey(BlogPost,on_delete=models.CASCADE,null=True,blank=True)
     text = models.TextField(blank=False, null=False)
     timestamp = models.DateTimeField(auto_now=True)
 
