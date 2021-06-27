@@ -1,6 +1,5 @@
 from channels.consumer import AsyncConsumer
 from asgiref.sync import sync_to_async
-from django.db import models
 from django.utils import timezone
 from authentication.models import User
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -138,20 +137,40 @@ class GlobalChatConsumer(AsyncConsumer):
             'type': 'websocket.send',
             "text": event["text"],
         })
+
     async def websocket_receive(self, event):
         user = self.scope['user']
         username = self.scope['url_route']['kwargs']['username']
-        
         other_user = await sync_to_async(User.objects.get)(username=username)
         self.thread_obj = await sync_to_async(Thread.objects.get_or_create_personal_thread)(user, other_user)
+        data = json.loads(event.get('text'))
 
-        msg = json.dumps({
+        if data['type'] == "MESSAGE":
+
+            msg = json.dumps({
                 "id": self.thread_obj.id,
-                "text": event.get("text"),
                 'username': self.scope['user'].username,
-                "time" : f"{timezone.now().hour}: {timezone.now().minute}"
-
+                "time" : f"{timezone.now().hour}: {timezone.now().minute}",
+                "data": {"text":data['content']}
             })
+
+            await self.store_message(text = data["content"], post_id = None )
+        else:
+            try:
+                blog_obj = await sync_to_async (BlogPost.objects.get)(pk=data["content"])
+
+                msg = json.dumps({
+                'username': self.scope['user'].username,
+                "time" : f"{timezone.now().hour}: {timezone.now().minute}",
+                "data" : {
+                    "text" : "sent a post"
+                }
+                })
+
+                await self.store_message(text = None, post_id = data["content"] )
+            except Exception as e:
+                pass
+
        
         await self.channel_layer.group_send(self.room_name, {
                 'type': 'websocket.message',
@@ -160,15 +179,26 @@ class GlobalChatConsumer(AsyncConsumer):
         
         await self.store_message(event.get("text"))
 
-    @database_sync_to_async
-    def store_message(self, text):
-        Message.objects.create(
-            thread=self.thread_obj,
-            sender=self.scope['user'],
-            text=text
-        )
+    database_sync_to_async
+    def store_message(self, text, post_id):
+        if post_id:
+            Message.objects.create(
+                thread=self.thread_obj,
+                sender=self.scope['user'],
+                post_id = post_id,
+                seen = False,
+            )
+
+        else:
+            Message.objects.create(
+                thread=self.thread_obj,
+                sender=self.scope['user'],
+                text=text,
+                seen = False,
+            )
         self.thread_obj.last_message = timezone.now()
         self.thread_obj.save()
+
 
 
 class PersonalChatConsumer(AsyncWebsocketConsumer):
@@ -190,7 +220,7 @@ class PersonalChatConsumer(AsyncWebsocketConsumer):
                 self.room_name,
                 {
                     'type': 'websocket_message',
-                    'message': msg
+                    'text': msg
                 }
         )
     
@@ -253,10 +283,6 @@ class PersonalChatConsumer(AsyncWebsocketConsumer):
             "text": msg
         })
         
-
-           
-
-
 
     @database_sync_to_async
     def store_message(self, text, post_id):
