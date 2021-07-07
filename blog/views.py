@@ -1,3 +1,4 @@
+from django.utils.functional import partition
 from blog.serializer import *
 from blog.models import *
 from shared.views import CreateUpdateDeleteView
@@ -11,7 +12,7 @@ from followunfollow.models import Follow , BlockList
            
 class BlogPostView(CreateUpdateDeleteView):
     model=BlogPost
-    serializer=BlogPostSerializer
+    serializer=CreateBlogSerializer
 
     def get(self, request):
         output_status = False
@@ -20,8 +21,8 @@ class BlogPostView(CreateUpdateDeleteView):
         output_data = {}
         id = request.GET.get("id")
         if id:
-            post_obj = BlogPost.objects.filter(pk = id).first()
-            serializer = BlogPostSerializer(post_obj)
+            post_obj = self.model.objects.filter(pk = id).first()
+            serializer = BlogPostSerializer(post_obj, context={'request': request})
             output_status = True
             output_data = serializer.data
             output_detail = "Success"
@@ -35,6 +36,85 @@ class BlogPostView(CreateUpdateDeleteView):
             "data" : output_data
         }
         return Response (context, status = res_status)
+
+    def post(self, request):
+        output_status = False
+        output_detail = "Failed"
+        res_status = status.HTTP_400_BAD_REQUEST
+        output_data = {}
+        user = request.user
+        extra_data = {'user' : user.id}
+        serializer = self.serializer(data = request.data, extra_data=extra_data)
+        if serializer.is_valid():
+            serializer.save()
+            output_status = True
+            output_detail = "Success"
+            res_status = status.HTTP_200_OK
+        else:
+            output_data = serializer.errors
+        context = {
+            'status' : output_status,
+            'detail' : output_detail,
+            'data' : output_data
+        }
+        return Response(context, status=res_status)
+
+    def put(self, request):
+        output_status = False
+        output_detail = "Failed"
+        res_status = status.HTTP_400_BAD_REQUEST
+        output_data = {}
+        user = request.user
+        id = request.data.get("id")
+        if id:
+            blog_obj = self.model.objects.filter(pk = id).first()
+            if blog_obj and blog_obj.user == user:
+                serializer = self.serializer(blog_obj, data= request.data , partial = True)
+                if serializer.is_valid():
+                    serializer.save()
+                    output_status = True
+                    output_detail = "Success"
+                    res_status = status.HTTP_200_OK
+                else:
+                    output_data = serializer.errors
+            else:
+                output_detail = "unauthorised"
+        else:
+            output_detail = "Id is required"
+        context = {
+            'status' : output_status,
+            'detail' : output_detail,
+            'data' : output_data
+        }
+        return Response(context, status=res_status)
+
+    def delete(self, request):
+        output_status = False
+        output_detail = "Failed"
+        res_status = status.HTTP_400_BAD_REQUEST
+        id = request.GET.get('id')
+        if id:
+            blog_obj = self.model.objects.filter(pk = id).first()
+            if blog_obj and blog_obj.user == request.user:
+                blog_obj.delete()
+                output_status = True
+                output_detail = "Success"
+                res_status = status.HTTP_200_OK
+            else:
+                output_detail = "unauthorised"
+        else:
+            output_detail = "id is required parameter"
+
+        context = {
+            'status' : output_status,
+            'detail' : output_detail,
+        }
+        return Response(context, status=res_status)
+
+
+
+
+
 
     
 
@@ -165,18 +245,79 @@ class CommentView(APIView):
 
         return Response(context, status = res_status)
 
-                 
+    def put(self, request):
+        output_status = False
+        output_detail = "Falied"
+        res_status = status.HTTP_400_BAD_REQUEST
+        output_data = {}
+        user = request.user
+        id = request.data.get('id')
+        comment_obj = Comment.post.filter(pk = id).first()
+        if comment_obj and comment_obj.user == user:
+            serializer = CommentSerializer(comment_obj, data = request.data , partial = True )
+            if serializer.is_valid():
+                serializer.save()
+                output_status = True
+                output_detail = "success"
+                res_status = status.HTTP_200_OK
+            else:
+                output_data = serializer.errors
+        else:
+            output_detail = "Invalid request"
+        context = {
+            "status" : output_status,
+            "detail" : output_detail,
+            "data" : output_data
+        }
+        return Response(context, status = res_status)
+
+    def delete(self, request):
+        output_status = False
+        output_detail = "Falied"
+        res_status = status.HTTP_400_BAD_REQUEST
+        user = request.user
+        id = request.GET.get("id")
+        if id:
+            comment_obj = Comment.objects.filter(pk = id).first()
+            if comment_obj:
+                if comment_obj.user == user or comment_obj.post.user == user:
+                    comment_obj.delete()
+                    output_status = True
+                    output_detail = "success"
+                    res_status = status.HTTP_200_OK
+                else:
+                    output_detail = "Unable to delete"
+            else:
+                output_detail = "Invalid id"
+        else:
+            output_detail = "Id is madantory"
+        context = {
+            "status" : output_status,
+            "detail" : output_detail,
+        }
+        return Response(context, status = res_status)
 
 
-
-            
-
-        
-        
-
-
-
-
-
-
-
+class UnlikePost(APIView):
+    def post(self, request):
+        output_status = False
+        output_detail = "Falied"
+        res_status = status.HTTP_400_BAD_REQUEST
+        user = request.user
+        id = request.GET.get('id')
+        if id:
+            like_obj = Like.objects.filter(post_id  = id, user = user).first()
+            if like_obj:
+                like_obj.delete()
+                output_status = True
+                output_detail = "success"
+                res_status = status.HTTP_200_OK
+            else:
+                output_detail = "No like is present for the post"
+        else:
+            output_detail = "Blog id is required"
+        context = {
+            "status" : output_status,
+            "detail" : output_detail,
+        }
+        return Response(context, status = res_status)

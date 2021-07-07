@@ -6,7 +6,6 @@ from django.utils import timezone
 from blog.models import BlogPost, Like, Comment
 from followunfollow.models import Follow
 from .models import NotificationModel
-from authentication.models import User
 from asgiref.sync import  sync_to_async
 from django.utils import timezone
 
@@ -23,6 +22,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
         if id == self.scope['user'].id:
             await self.update_status(True)
+        
 
         await self.accept()
 

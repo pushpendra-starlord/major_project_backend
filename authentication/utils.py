@@ -30,6 +30,7 @@ def get_following_count(user):
     follower_obj = Follow.objects.filter(user = user)
     follower = follower_obj.values_list('follower', flat= True).count()
     following = follower_obj.values_list('following', flat= True).count()
+    
     return {
         "follower" : follower,
         "following": following 

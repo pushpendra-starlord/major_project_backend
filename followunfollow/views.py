@@ -29,7 +29,11 @@ class FollowBLockApiView(APIView):
         output_detail = "Failed"
         res_status = status.HTTP_400_BAD_REQUEST
         output_data = {}
-        obj = self.get_queryset(request)
+        id = request.GET.get("id")
+        if id:
+            obj = self.MODELCLASS.objects.filter(user_id = id).first()
+        else:
+            obj = self.get_queryset(request)
         if obj:
             serializer = self.SERIALIZER_CLASS(obj)
             output_data = serializer.data
@@ -107,9 +111,11 @@ class FollowList(FollowBLockApiView):
                     else:
                         obj = self.get_queryset(request)
                         z = User.objects.get(pk = int(id))
+                     
                         obj.following.add(z)
                         other_list = self.MODELCLASS.objects.get(user = z)
                         other_list.follower.add(user)
+                        
                         NotificationModel.objects.create(
                             user_id = id,
                             type = 1,
@@ -198,6 +204,7 @@ class UnfollowView(APIView):
                 unfollow(user, id)
                 output_status = True
                 output_detail = "unfollowed"
+                res_status = status.HTTP_200_OK
             else:
                 output_detail = "invalid id"
         context = {

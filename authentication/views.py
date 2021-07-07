@@ -27,14 +27,23 @@ class LoginView(APIView):
         email_obj = User.objects.filter(email = login_data ).first()
         if username_obj and username_obj.email_verified:
             if username_obj.check_password(password):
-                data = get_token(username_obj)
+                data = {
+                    "token" : get_token(username_obj),
+                    "username" : username_obj.username,
+                    "user_id" : username_obj.id,
+                }
+               
             else:
                 output_status = False
                 res_status = status.HTTP_400_BAD_REQUEST
                 detail = "Incorrect password"
         elif email_obj and email_obj.email_verified:
             if email_obj.check_password(password):
-                data = get_token(username_obj)
+                data = {
+                    "token" : get_token(username_obj),
+                    "username" : username_obj.username,
+                    "user_id" : username_obj.id,
+                }
             else:
                 output_status = False
                 res_status = status.HTTP_400_BAD_REQUEST
@@ -120,17 +129,13 @@ class RegisterView(APIView):
                     email_obj.otp_created_at = timezone.now()
                     output_status = False
                     output_detail = "Email is registered but not verified, Please verify email"
-                   
-                    
-                
                 else:
                     otp_creation(email_obj)
-
+                res_status = status.HTTP_200_OK
                 output_data = {
                     "email" : email_obj.email,
                     "status" : 1
                 }
-
         else:
             user_obj  = User.objects.create(username = username, email = email)
             user_obj.set_password(password)
@@ -253,21 +258,35 @@ class ProfileView(APIView):
         output_detail = "Unexpected Error"
         output_data = {} 
         user = request.user
-        following , block = False , False
-        id = request.GET.get('id')
+        
+        following  = False
+        
+        id = int(request.GET.get('id')) if request.GET.get('id') else None
         if id:
             user = User.objects.filter(pk = id).first()
             if user:
-                follow_obj = Follow.objects.filter(user = request.user).values_list("following", flat = True)
+                follow_obj = list(Follow.objects.filter(user = request.user).values_list("following", flat=True))
                 block_obj = BlockList.objects.filter(user = request.user).values_list("blocked", flat = True)
-                if id in list(follow_obj):
+                if id in follow_obj:
                     following = True
-                if id in list(block_obj):
-                    block = True
-
+                elif id in list(block_obj):
+                    output_status = True
+                    output_detail = "Success"
+                    res_status = status.HTTP_200_OK
+                    output_data = {
+                        "block" : True,
+                        "user" : UserProfileSerializer(user).data,
+                        "count" : get_following_count(user)
+                    }
+                    context = {
+                        "status": output_status,
+                        "detail": output_detail,
+                        "data" : output_data
+                    }
+                    return Response(context, status=res_status)
+                    
                 output_data = {
                     "is_following" : following,
-                    "is_blocked" : block
                 }
         else:
             user = request.user
@@ -326,6 +345,7 @@ class EmailVerification(APIView):
         res_status = status.HTTP_400_BAD_REQUEST
         output_detail = "Unexpected Error"
         email = request.data.get("email", '')
+        print(email)
         otp = request.data.get("otp", "")
         if email and otp:
             user_obj = User.objects.filter(email= email).first()
